@@ -1,7 +1,7 @@
 class Config:
     
     # repo path
-    path = "C:/Users/kdzhou/source/repos/VedaOntoSentAnalysis"
+    path = "C:/Users/kdzhou/source/repos/EmbeddingLexMH"
 
     # data path
     data_path = f"{path}/data"
