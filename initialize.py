@@ -34,6 +34,7 @@ def initialize():
         count += 1
         if count == 10:
             break
+        
     # buildlexicon(data, lexical source, seed, expand function): lexicon
 
     #   seed lexicon(seed) : seeded lexicon

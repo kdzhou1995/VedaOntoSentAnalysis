@@ -10,5 +10,6 @@ class Config:
 
     # lexcal sources path
     lexical_sources = f"{path}/lexical_sources"
-
-    
+    nltk_lexical_sources = [
+        'gutenberg',#98552 ##2621613
+    ]
