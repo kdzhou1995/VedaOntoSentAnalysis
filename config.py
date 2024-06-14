@@ -13,3 +13,6 @@ class Config:
     nltk_lexical_sources = [
         'gutenberg',#98552 ##2621613
     ]
+    embeddings_model = 'bert-base-uncased'
+    
+    

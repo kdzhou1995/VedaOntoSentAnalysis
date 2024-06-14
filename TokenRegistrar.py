@@ -1,5 +1,3 @@
-
-
 class TokenRegistrar:
     '''
     class: TokenRegistrar
@@ -12,26 +10,26 @@ class TokenRegistrar:
     
     '''
     param: sentence - a tokenized plaintext sentence
-    purpose: part-of-speech(POS) tag input sentence
-    output: posVector - a vector of POS tags equal in length to the tokenized sentence
-    '''
-    def TagPOS(sentence):
-        return
-    
-    '''
-    param: sentence - a tokenized plaintext sentence
     purpose: fix word spellings and run other preprocessing tools on sentence
     output: correctedSentence - plaintext proprocessing corrected sentence
     '''
-    def PreProcessSentence(sentence):
+    def PreProcessSentence(self, sentence):
         return
 
+    '''
+    param: sentence - a tokenized plaintext sentence
+    purpose: part-of-speech(POS) tag input sentence
+    output: posVector - a vector of POS tags equal in length to the tokenized sentence
+    '''
+    def TagPOS(self, sentence):
+        return
+    
     '''
     param: sentence - a plaintext sentence
     purpose: pass sentence through the model to get embedding
     output: embeddings - embeddings obtained from the final output of model
     '''
-    def ModelGetSentenceEmbedding(sentence):
+    def ModelGetSentenceEmbedding(self, sentence):
         return
     
     '''
@@ -41,7 +39,7 @@ class TokenRegistrar:
     sql table
     output: success / failure
     '''
-    def RegisterSQLTable(tableName, embedding):
+    def RegisterSQLTable(self, tableName, embedding):
         return
     
     '''
@@ -50,7 +48,7 @@ class TokenRegistrar:
     purpose: write the DDL to insert row into table
     output: success / failure
     '''    
-    def InsertToTable(tableName, insertItem):
+    def GenerateInsertToTable(self, tableName, insertItem):
         return
 
     '''
@@ -61,7 +59,7 @@ class TokenRegistrar:
         auto increment id. For each token, insert embedding into table with the ids 
         shared by sentence & embedding
     '''
-    def TokenContextToDB(embedding, sentence):
+    def GenerateTokenContextToDB(self, embedding, sentence):
         return
 
 
