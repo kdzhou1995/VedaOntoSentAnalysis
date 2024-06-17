@@ -1,3 +1,5 @@
+from Helpers import SentenceHelpers
+
 import torch
 from transformers import BertTokenizer, BertModel
 
@@ -17,18 +19,19 @@ class BERTModelWrapper:
     param: sentence - a plain text sentence
     purpose: use BERT's wordpiece tokenizer to tokenize the sentence. Retain indice mappings
     between whole tokens and wordpiece tokens
-    output: bertTokenizedVector - an input embedding vector in the BERT input format
+    output: tokensTensor - an input vector of token ids in the BERT input format
     output: tokenizedSentence - sentence split by white space into words
     '''
     def TokenizeSentence(self, sentence):
         markupSentence = "[CLS]" + sentence + "[SEP]"
         tokenizedSentence = self.tokenizer.tokenize(markupSentence)
-        return torch.tensor(tokenizedSentence), tokenizedSentence
-
+        token_ids = self.tokenizer.convert_tokens_to_ids(tokenizedSentence)
+        return torch.tensor(token_ids), tokenizedSentence
+    
     '''
     param: bertInputTokens- an input embedding vector in the BERT input format
     purpose: creates sentence id vector out of the bertTokenizedVector
-    output: sentenceVector - a vector of ids indicating which sentence an indice belongs to
+    output: sentenceTensor - a vector of ids indicating which sentence an indice belongs to
     '''
     def GetSentenceIdVector(self, bertInputTokens):
         sentence_ids = [1] * len(bertInputTokens)

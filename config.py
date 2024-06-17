@@ -15,4 +15,4 @@ class Config:
     ]
     embeddings_model = 'bert-base-uncased'
     
-    
+    sentence_splitter = lambda string : string.split()

@@ -1,5 +1,5 @@
 from config import Config
-from TokenRegistrar import *
+from TokenRegistrar.TokenRegistrar import *
 
 
 def initialize():
