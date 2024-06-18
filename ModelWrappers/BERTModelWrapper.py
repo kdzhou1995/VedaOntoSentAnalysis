@@ -85,6 +85,4 @@ class BERTModelWrapper:
 
             bertEmbeddings = torch.concat((bertEmbeddings, t1[None,:]))
 
-        print(bertEmbeddings.shape)
-
         return bertEmbeddings
