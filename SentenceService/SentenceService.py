@@ -28,11 +28,11 @@ class SentenceService(object):
         stemmer = PorterStemmer()
         
         pos = [tp[1] for tp in nltk.pos_tag(sentence)]
-        isStopWord = [token in stopwords for token in sentence]
+        isStopWord = [token in stopwords.words('english') for token in sentence]
         stems = [stemmer.stem(token) for token in sentence]
 
         return pos, isStopWord, stems
-    
+
     '''
     param: sentence - a plaintext sentence
     purpose: pass sentence through the model to get embedding
@@ -41,12 +41,10 @@ class SentenceService(object):
     def ModelGetSentenceEmbedding(self, sentence):
 
         tokensTensor, tokenizedSentence = self.embeddingsModel.TokenizeSentence(sentence)
-        sentenceTensor = self.GetSentenceIdVector(tokensTensor)
+        sentenceTensor = self.embeddingsModel.GetSentenceIdVector(tokensTensor)
         bertEmbedding = self.embeddingsModel.GetSentenceEmbedding(tokensTensor, sentenceTensor)
-
-        sentenceLen = SentenceHelpers.sentenceSplitWhitespace(sentence)
         
-        return self.embeddingsModel.ReassembleEmbedding(bertEmbedding, tokenizedSentence, sentenceLen)
+        return self.embeddingsModel.ReassembleEmbedding(bertEmbedding, tokenizedSentence)
     '''
     param: sentence - a plaintext sentence
     purpose: register to db the tokens and embeddings from a sentence
@@ -69,20 +67,25 @@ class SentenceService(object):
             Exception("Length of stop words vector does not match sentence length")
         if len(stems) != sentenceLen:
             Exception("Length of stems does not match sentence length")
-        if len(embeddings) != sentenceLen:
-            Exception("Length of ")
+        if embeddings.shape[0] != sentenceLen + 2:
+            Exception("Length of embeddings does not match length of tokens")
 
-        EmbeddingMapper.MapToSentenceEmbeddingsModel(self._GetNextAvailableSentenceId(), sentenceSplit, embeddings)
+        embeddingModel = EmbeddingMapper.MapToSentenceEmbeddingsModel(self._GetNextAvailableSentenceId(), sentenceSplit, embeddings)
         self.currentEmbeddingId += 1
 
+        embeddingModelList = []
         for token, pos, isStopWord, stem, index in zip(sentenceSplit, sentPos, isStopWordVector, stems, list(range(0,sentenceLen))):
             if isStopWord :
                 continue
             else:
-                TokenMapper.MapToRegisterTokenModel(self._GetNextAvailableTokenId, token, pos, stem, 
+                tokenModel = TokenMapper.MapToRegisterTokenModel(self._GetNextAvailableTokenId(), token, pos, stem, 
                                                     index, self.currentEmbeddingId)
+                
+                self.currentTokenId += 1
 
-        return
+                embeddingModelList.append(tokenModel)
+
+        return embeddingModel, embeddingModelList
     
     '''
     param: tableName - table to write data to

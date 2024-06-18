@@ -11,7 +11,7 @@ class BERTModelWrapper:
         to the model for app use
     '''
     def __init__(self, modelName, outputHiddenStates = True):
-        self.tokenizer = BertTokenizer.from_pretrained('modelName')
+        self.tokenizer = BertTokenizer.from_pretrained(modelName)
         self.model = BertModel.from_pretrained(modelName, output_hidden_states = outputHiddenStates)
         return
 
@@ -26,7 +26,7 @@ class BERTModelWrapper:
         markupSentence = "[CLS]" + sentence + "[SEP]"
         tokenizedSentence = self.tokenizer.tokenize(markupSentence)
         token_ids = self.tokenizer.convert_tokens_to_ids(tokenizedSentence)
-        return torch.tensor(token_ids), tokenizedSentence
+        return torch.tensor(token_ids)[None,:], tokenizedSentence
     
     '''
     param: bertInputTokens- an input embedding vector in the BERT input format
@@ -35,7 +35,7 @@ class BERTModelWrapper:
     '''
     def GetSentenceIdVector(self, bertInputTokens):
         sentence_ids = [1] * len(bertInputTokens)
-        return torch.tensor(sentence_ids)
+        return torch.tensor(sentence_ids)[None,:]
     
     '''
     param: tokensTensor - an input embedding tensor in the BERT input format
@@ -47,10 +47,18 @@ class BERTModelWrapper:
         with torch.no_grad():
             encoderOutput = self.model(tokensTensor, sentenceTensor)
 
-            finalHiddenState = encoderOutput[2][-1]
+            finalHiddenState = encoderOutput[2][-1][0]
             
         return finalHiddenState
     
+    '''
+    param: groupedEmbeddingList - a list of embeddings of the same size to be averaged
+    purpose: combine a list of embeddings via mean/average
+    output: combined embeddings
+    '''    
+    def AveragingFunction(self, groupedEmbeddingList):
+        return torch.mean(groupedEmbeddingList, 0)
+
     '''
     param: bertEmbeddingOutput - BERT embeddings for a sentence
     param: wpMappingDict - dictionary of vectors of indices to allow the reassembly of wordpiece tokens and 
@@ -60,28 +68,23 @@ class BERTModelWrapper:
         for word pieces that belong to the same word
     output: bertEmbedding - resassembled BERT embedding
     '''
-    def ReassembleEmbedding(self, bertEmbeddingOutput, tokenizedSentence, averagingFunction):
-
-        if len(bertEmbeddingOutput) != len(tokenizedSentence):
+    def ReassembleEmbedding(self, bertEmbeddingOutput, tokenizedSentence):
+        if bertEmbeddingOutput.shape[0] != len(tokenizedSentence):
             raise Exception("BERT embeddings output vector does not match tokenized sentence in length")
         
         groupedWpEmbeddings = []
-        for token, embedding in zip(tokenizedSentence, bertEmbeddingOutput):
+        for token, embedding in zip(tokenizedSentence, bertEmbeddingOutput[:, None]):
             if '##' in token:
-                groupedWpEmbeddings[-1].append(embedding)
+                groupedWpEmbeddings[-1] = torch.concat((groupedWpEmbeddings[-1], embedding))
             else:
-                groupedWpEmbeddings.append([embedding])
+                groupedWpEmbeddings.append(embedding)
 
-        bertEmbeddings = []
+        bertEmbeddings = torch.tensor([])
         for embeddingSet in groupedWpEmbeddings:
-            bertEmbeddings.append(averagingFunction(embeddingSet))
+            t1 = self.AveragingFunction(torch.tensor(embeddingSet))
 
-        return torch.tensor(bertEmbeddings)
-    
-'''
-param: groupedEmbeddingList - a list of embeddings of the same size to be averaged
-purposes: combine a list of embeddings via mean/average
-output: combined embeddings
-'''    
-def meanCombineEmbedding(groupedEmbeddingList):
-    return torch.sum(groupedEmbeddingList)/len(groupedEmbeddingList)
+            bertEmbeddings = torch.concat((bertEmbeddings, t1[None,:]))
+
+        print(bertEmbeddings.shape)
+
+        return bertEmbeddings

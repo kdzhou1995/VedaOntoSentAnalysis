@@ -6,3 +6,5 @@ def MapToSentenceEmbeddingsModel(sentenceId, tokens, embeddings):
     model.Id = sentenceId
     model.Tokens = tokens
     model.Embeddings = embeddings
+
+    return model
